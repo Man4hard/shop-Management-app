@@ -115,7 +115,7 @@ export default function Reports() {
           {report.chartData.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">{t("reports", "noDataPeriod")}</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2" dir="ltr">
               {report.chartData.map((d, i) => (
                 <div key={i} className="space-y-1">
                   <div className="flex items-center justify-between gap-2 text-xs">

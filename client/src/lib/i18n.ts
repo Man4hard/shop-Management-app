@@ -41,6 +41,17 @@ const translations = {
     processing: { en: "Processing...", ur: "عمل جاری ہے..." },
     pay: { en: "PAY", ur: "ادائیگی" },
   },
+  scanner: {
+    title: { en: "Camera Scanner", ur: "کیمرہ اسکینر" },
+    openCamera: { en: "Camera", ur: "کیمرہ" },
+    starting: { en: "Starting camera...", ur: "کیمرہ شروع ہو رہا ہے..." },
+    pointCamera: { en: "Point camera at barcode to scan", ur: "اسکین کرنے کے لیے کیمرہ بارکوڈ پر رکھیں" },
+    cameraPermission: { en: "Camera permission denied. Please allow camera access.", ur: "کیمرہ کی اجازت نہیں دی گئی۔ براہ کرم کیمرہ تک رسائی کی اجازت دیں۔" },
+    noCamera: { en: "No camera found on this device.", ur: "اس ڈیوائس پر کوئی کیمرہ نہیں ملا۔" },
+    cameraError: { en: "Could not start camera.", ur: "کیمرہ شروع نہیں ہو سکا۔" },
+    retry: { en: "Retry", ur: "دوبارہ کوشش" },
+    scanned: { en: "Scanned", ur: "اسکین ہوا" },
+  },
   screensaver: {
     tagline: { en: "Your Trusted Shopping Partner", ur: "آپ کا قابل اعتماد شاپنگ پارٹنر" },
     scanToStart: { en: "Scan barcode to start...", ur: "شروع کرنے کے لیے بارکوڈ اسکین کریں..." },

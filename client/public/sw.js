@@ -1,5 +1,5 @@
-const CACHE_NAME = "tayyab-pos-v1";
-const API_CACHE = "tayyab-api-v1";
+const CACHE_NAME = "tayyab-pos-v3";
+const API_CACHE = "tayyab-api-v3";
 
 const STATIC_ASSETS = [
   "/",
@@ -52,7 +52,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  event.respondWith(cacheFirstThenNetwork(event.request));
+  event.respondWith(networkFirstThenCache(event.request));
 });
 
 async function networkFirstThenCache(request) {
@@ -79,21 +79,6 @@ async function networkFirstThenCache(request) {
   }
 }
 
-async function cacheFirstThenNetwork(request) {
-  const cached = await caches.match(request);
-  if (cached) return cached;
-
-  try {
-    const networkResponse = await fetch(request);
-    if (networkResponse.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, networkResponse.clone());
-    }
-    return networkResponse;
-  } catch (err) {
-    return new Response("", { status: 503 });
-  }
-}
 
 self.addEventListener("message", (event) => {
   if (event.data === "skipWaiting") {

@@ -44,7 +44,7 @@ function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-background border-t z-50 safe-area-bottom print:hidden" data-testid="nav-bottom">
-      <div className="flex items-center justify-around max-w-lg mx-auto">
+      <div className="flex items-center justify-around max-w-lg mx-auto" dir="ltr">
         {navItems.map((item) => {
           const isActive = location === item.path;
           const label = t("nav", item.labelKey);

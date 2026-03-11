@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,13 +11,15 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Plus, Minus, Trash2, Search, ShoppingCart, Printer, Receipt,
   ScanBarcode, Check, X, CreditCard, Banknote, Smartphone,
-  Clock, MapPin, Phone, Store, WifiOff,
+  Clock, MapPin, Phone, Store, WifiOff, Camera,
 } from "lucide-react";
 import type { Product, Customer } from "@shared/schema";
 import shopBanner from "@assets/shop-banner.png";
 import { useOfflineProducts, useOfflineCustomers, useOfflineContext } from "@/hooks/use-offline";
 import { createBillOffline } from "@/lib/syncService";
 import { useLanguage } from "@/lib/language-context";
+
+const CameraScanner = lazy(() => import("@/components/camera-scanner"));
 
 interface CartItem {
   productId: number;
@@ -66,6 +68,7 @@ export default function Billing() {
   const [showCheckout, setShowCheckout] = useState(false);
   const [lastAdded, setLastAdded] = useState<string>("");
   const [lastAddedPrice, setLastAddedPrice] = useState<string>("");
+  const [showCamera, setShowCamera] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const scanBuffer = useRef("");
   const scanTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -200,6 +203,17 @@ export default function Billing() {
     }
   }, [products, cart, toast]);
 
+  const handleCameraScan = useCallback((barcode: string) => {
+    setShowCamera(false);
+    const found = products.find((p) => p.barcode === barcode.trim());
+    if (found) {
+      addProductToCart(found);
+      toast({ title: `${t("scanner", "scanned")}: ${found.name}`, description: `Rs ${found.salePrice}` });
+    } else {
+      toast({ title: t("pos", "productNotFound"), description: `${t("pos", "barcode")}: ${barcode}`, variant: "destructive" });
+    }
+  }, [products, toast, t]);
+
   useEffect(() => {
     if (showCheckout || showReceipt) return;
     function handleKeyDown(e: KeyboardEvent) {
@@ -326,6 +340,15 @@ export default function Billing() {
   function handlePrint() {
     window.print();
   }
+
+  const cameraOverlay = showCamera ? (
+    <Suspense fallback={null}>
+      <CameraScanner
+        onScan={handleCameraScan}
+        onClose={() => setShowCamera(false)}
+      />
+    </Suspense>
+  ) : null;
 
   if (showReceipt && lastBill) {
     return (
@@ -571,10 +594,18 @@ export default function Billing() {
                   data-testid="input-search-billing"
                 />
               </div>
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowCamera(true); }}
+                className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0 active:bg-white/30 transition-colors"
+                data-testid="button-camera-screensaver"
+              >
+                <Camera className="w-5 h-5 text-white" />
+              </button>
             </div>
             <p className="text-center text-white/40 text-xs mt-3">
               {t("screensaver", "scanOrSearch")}
             </p>
+            {cameraOverlay}
           </div>
         </div>
       </div>
@@ -596,26 +627,36 @@ export default function Billing() {
       </div>
 
       <div className="px-3 py-2">
-        <div className="relative">
-          <ScanBarcode className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <Input
-            ref={searchRef}
-            placeholder={t("pos", "scanOrSearch")}
-            className="ps-11 h-11 text-base rounded-xl shadow-sm border-2 bg-background"
-            value={search}
-            onChange={(e) => handleSearchInput(e.target.value)}
-            onKeyDown={handleSearchKeyDown}
-            autoFocus
-            data-testid="input-search-pos"
-          />
-          {search && (
-            <button
-              className="absolute end-3 top-1/2 -translate-y-1/2"
-              onClick={() => { setSearch(""); searchRef.current?.focus(); }}
-            >
-              <X className="w-4 h-4 text-muted-foreground" />
-            </button>
-          )}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <ScanBarcode className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input
+              ref={searchRef}
+              placeholder={t("pos", "scanOrSearch")}
+              className="ps-11 h-11 text-base rounded-xl shadow-sm border-2 bg-background"
+              value={search}
+              onChange={(e) => handleSearchInput(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              autoFocus
+              data-testid="input-search-pos"
+            />
+            {search && (
+              <button
+                className="absolute end-3 top-1/2 -translate-y-1/2"
+                onClick={() => { setSearch(""); searchRef.current?.focus(); }}
+              >
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+            )}
+          </div>
+          <Button
+            variant="secondary"
+            className="h-11 w-11 rounded-xl shrink-0 p-0"
+            onClick={() => setShowCamera(true)}
+            data-testid="button-camera-pos"
+          >
+            <Camera className="w-5 h-5" />
+          </Button>
         </div>
 
         {search && filtered.length > 0 && (
@@ -715,6 +756,8 @@ export default function Billing() {
           <div ref={itemsEndRef} />
         </div>
       </div>
+
+      {cameraOverlay}
 
       {cart.length > 0 && (
         <div className="fixed bottom-16 left-0 right-0 z-40 safe-area-bottom" data-testid="bar-total">

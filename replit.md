@@ -61,6 +61,13 @@ A mobile-first Progressive Web App for complete shop management including POS (P
 - **Resilient Checkout** - If API bill creation fails (network error, server down), bill is auto-saved to IndexedDB and synced later
 - **PWA Manifest** (`client/public/manifest.json`) - Installable on Android with standalone display
 
+## Camera Barcode Scanner
+- **Component**: `client/src/components/camera-scanner.tsx` — uses `html5-qrcode` for mobile camera barcode scanning
+- **Usage**: Camera button appears on both screensaver and active POS search bar; tapping opens full-screen camera scanner
+- **Both methods work**: Mobile camera scanner AND external USB/Bluetooth barcode scanner work simultaneously
+- **Features**: Front/back camera switch, duplicate scan prevention (3s cooldown), auto-close on scan, Urdu/English translations
+- **Lazy loaded**: Camera component only loads when the camera button is tapped
+
 ## Performance Optimizations
 - **Memoization** - Billing page uses `useMemo` for filtered products, cart totals, and customer options to avoid unnecessary recalculations
 - **Lazy Loading** - Non-POS pages (Dashboard, Products, Customers, Reports, Settings) are `React.lazy()` loaded with `Suspense` fallback
